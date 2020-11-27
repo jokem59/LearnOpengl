@@ -8,16 +8,21 @@ add_executable(LearnOpenGL
                "${CMAKE_SOURCE_DIR}/src/main.cpp"
                "${CMAKE_SOURCE_DIR}/src/glad.c")
 
-target_link_libraries(LearnOpenGL
-                      "${CMAKE_SOURCE_DIR}/lib/glfw3.lib")
-
-# Specify C++ standard
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 target_include_directories(LearnOpenGL
                            PUBLIC
                            "${CMAKE_SOURCE_DIR}/include")
+
+
+if (WIN32)
+  target_link_libraries(LearnOpenGL
+                      "${CMAKE_SOURCE_DIR}/lib/windows/glfw3.lib")
+endif (WIN32)
+
+if (UNIX)
+  target_link_libraries(LearnOpenGL
+                        "${CMAKE_SOURCE_DIR}/lib/linux/libglfw3.a")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+endif (UNIX)
 
 
 # Make top-level CMakeLists aware of sub-CMakeLists

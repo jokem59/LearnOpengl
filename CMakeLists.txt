@@ -12,13 +12,15 @@ target_include_directories(LearnOpenGL
                            PUBLIC
                            "${CMAKE_SOURCE_DIR}/include")
 
-
 if (WIN32)
   target_link_libraries(LearnOpenGL
                       "${CMAKE_SOURCE_DIR}/lib/windows/glfw3.lib")
 endif (WIN32)
 
 if (UNIX)
+  SET(GCC_COVERAGE_COMPILE_FLAGS "-Wl,--no-as-needed -ldl")
+  SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+
   target_link_libraries(LearnOpenGL
                         "${CMAKE_SOURCE_DIR}/lib/linux/libglfw3.a")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")

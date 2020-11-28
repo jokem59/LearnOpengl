@@ -103,10 +103,6 @@ int main()
         -0.5f  , 0.5f , 0.0f, // top
         -0.75f , -0.5f, 0.0f, // bottom left
         -0.25f , -0.5f, 0.0f,  // bottom right
-
-        0.5f  , 0.5f , 0.0f, // top
-        0.75f , -0.5f, 0.0f, // bottom left
-        0.25f , -0.5f, 0.0f  // bottom right
     };
 
     // Generated and assign a unique Vertex Buffer Object (VBO) ID - refers to memory in GFX card
@@ -136,6 +132,33 @@ int main()
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     glBindVertexArray(0);
 
+    float verticesRight[] = {
+        0.5f  , 0.5f , 0.0f, // top
+        0.75f , -0.5f, 0.0f, // bottom left
+        0.25f , -0.5f, 0.0f  // bottom right
+    };
+
+    unsigned int VBORight;
+    glGenBuffers(1, &VBORight);
+
+    // Vertex Array Object
+    unsigned int VAORight;
+    glGenVertexArrays(1, &VAORight);
+
+    // 1. bind Vertex Array Object
+    glBindVertexArray(VAORight);
+    // 2. copy our vertices array in a buffer for OpenGL to use
+    glBindBuffer(GL_ARRAY_BUFFER, VBORight);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticesRight), verticesRight, GL_STATIC_DRAW);
+    // 3. then set our vertex attributes pointers
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
+    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
+    glBindVertexArray(0);
+
+
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     glViewport(0, 0, 800, 600);
@@ -153,7 +176,10 @@ int main()
         // draw the triangle
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        glBindVertexArray(VAORight);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         // check and call events and swap the buffers
         glfwSwapBuffers(window);

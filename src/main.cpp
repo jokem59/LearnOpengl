@@ -5,25 +5,20 @@
 // Vector Shader in GLSL (similar to C)
 const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
+    "out vec4 vertexColor; // output of vertexShader to pass to fragment shader\n"
     "void main()\n"
     "{\n"
     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+    "   vertexColor = vec4(0.5, 0.0, 0.0, 1.0);\n"
     "}\0";
 
 const char* fragmentShaderSource = "#version 330 core\n"
+    "in vec4 vertexColor; // the input variably from vertexShader\n"
     "out vec4 FragColor;\n"
     "void main()\n"
     "{\n"
-    "FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "FragColor = vertexColor;\n"
     "}\0";
-
-const char* fragmentShaderSourceYlw = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
-    "}\0";
-
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -85,11 +80,6 @@ int main()
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
 
-    unsigned int fragmentShaderYlw;
-    fragmentShaderYlw = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShaderYlw, 1, &fragmentShaderSourceYlw, NULL);
-    glCompileShader(fragmentShaderYlw);
-
     // Linking the VertexShader and FragmentShader
     unsigned int shaderProgram;
     shaderProgram = glCreateProgram();
@@ -106,36 +96,16 @@ int main()
         std::cout << "ERROR::SHADERPROGRAM::LINKING_FAILED\n" << infoLog2 << std::endl;
     }
 
-    // Linking the VertexShader and FragmentShader
-    unsigned int shaderProgramYlw;
-    shaderProgramYlw = glCreateProgram();
-    glAttachShader(shaderProgramYlw, vertexShader);
-    glAttachShader(shaderProgramYlw, fragmentShaderYlw);
-    glLinkProgram(shaderProgramYlw);
-
-    // Check if success
-    char infoLog3[512];
-    glGetProgramiv(shaderProgramYlw, GL_LINK_STATUS, &success);
-    if(!success)
-    {
-        glGetProgramInfoLog(shaderProgramYlw, 512, NULL, infoLog3);
-        std::cout << "ERROR::SHADERPROGRAM::LINKING_FAILED\n" << infoLog3 << std::endl;
-    }
-
     // After linking to ShaderProgram, no longer need compiled shaders
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
     // Vertex Shader Input
-    // Points on Normalized Device Coordinates (NDC)
+        // Points on Normalized Device Coordinates (NDC)
     float vertices[] = {
-        -0.5f  , 0.5f , 0.0f, // top
-        -0.75f , -0.5f, 0.0f, // bottom left
-        -0.25f , -0.5f, 0.0f,  // bottom right
-
-        0.5f  , 0.5f , 0.0f, // top
-        0.75f , -0.5f, 0.0f, // bottom left
-        0.25f , -0.5f, 0.0f  // bottom right
+        -0.5f, -0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+        0.0f,  0.5f, 0.0f
     };
 
     // Generated and assign a unique Vertex Buffer Object (VBO) ID - refers to memory in GFX card
@@ -179,15 +149,10 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // draw the orange triangle
+        // draw the triangle
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
-
-        // draw the yellow triangle
-        glUseProgram(shaderProgramYlw);
-        //glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 3, 3);
 
         // check and call events and swap the buffers
         glfwSwapBuffers(window);

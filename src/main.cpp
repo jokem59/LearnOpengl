@@ -1,23 +1,22 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <cmath>
 
 // Vector Shader in GLSL (similar to C)
 const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
-    "out vec4 vertexColor; // output of vertexShader to pass to fragment shader\n"
     "void main()\n"
     "{\n"
     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "   vertexColor = vec4(0.5, 0.0, 0.0, 1.0);\n"
     "}\0";
 
 const char* fragmentShaderSource = "#version 330 core\n"
-    "in vec4 vertexColor; // the input variably from vertexShader\n"
+    "uniform vec4 ourColor;\n"
     "out vec4 FragColor;\n"
     "void main()\n"
     "{\n"
-    "FragColor = vertexColor;\n"
+    "FragColor = ourColor;\n"
     "}\0";
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -148,6 +147,12 @@ int main()
         // specifies what color we want to clear the screen with
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        // update the uniform color
+        float timeValue = glfwGetTime();
+        float greenValue = sin(timeValue) / 2.0f + 0.5f;
+        int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 
         // draw the triangle
         glUseProgram(shaderProgram);

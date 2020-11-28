@@ -77,3 +77,14 @@ You can also use _swizzling_ to fill in `vecn` constructors mixed with literals.
 
 #### Ins and Outs
 All shaders can specify *in* and *out* variables.  Specifically, an *in* variable is a *vertex attribute*, typically max of 16 but can be queried with `GL\_MAX\_VERTEX\_ATTRIBUTE`.  You _link_ variables from one shader to another by specifying the *out* variable in one shader and specifying the same variable name as *in* in the subsequent shader.
+
+#### Uniforms
+*Uniforms* are another means to pass data from the CPU to the shaders on the GPU.  These are different from *Vertex Attributes*.  *Uniforms* are _global_, which means a uniform variable is unique per shader object and can be accessed by any shader at any stage of the shader program.  They also differ because once you set their value, they keep that value until they are reset or updated.
+
+*Uniform* variables can be accessed and set as follows using `glGetUniformLocation` and `glUniform4f`.  NOTE: the argument passed into `glGetUniformLocation` matches the *uniform* variable declaration in our shader program.
+
+    float timeValue = glfwGetTime();
+    float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+    int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+    glUseProgram(shaderProgram);
+    glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);

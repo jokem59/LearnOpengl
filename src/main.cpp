@@ -98,11 +98,15 @@ int main()
     glDeleteShader(fragmentShader);
 
     // Vertex Shader Input
-        // Points on Normalized Device Coordinates (NDC)
+    // Points on Normalized Device Coordinates (NDC)
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f,  0.5f, 0.0f
+        -0.5f  , 0.5f , 0.0f, // top
+        -0.75f , -0.5f, 0.0f, // bottom left
+        -0.25f , -0.5f, 0.0f,  // bottom right
+
+        0.5f  , 0.5f , 0.0f, // top
+        0.75f , -0.5f, 0.0f, // bottom left
+        0.25f , -0.5f, 0.0f  // bottom right
     };
 
     // Generated and assign a unique Vertex Buffer Object (VBO) ID - refers to memory in GFX card
@@ -149,7 +153,7 @@ int main()
         // draw the triangle
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         // check and call events and swap the buffers
         glfwSwapBuffers(window);

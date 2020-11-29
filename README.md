@@ -15,7 +15,7 @@ VBO1: Position Only
 | pos[0] | pos[1] | pos[2] |
 
 VBO2: Position and Velocity
-| pos[0] | vel[0] | pos[1] | vel[1] |
+| pos[0] | vel[0] | pos[1] | vec[1] |
 
 ### Vertex Array Objects - Managing VBO and their Attributes
 VAOs can be bound just like VBOs, and any subsequent vertex attribute calls from then on will be stored in the VAO.  The advantage with VAO is when configuring vertex attribute pointers, you only have to make the calls once and whenever we want to draw an object, just bind the corresponding VAO.  All the state is stored inside the VAO.
@@ -88,3 +88,5 @@ All shaders can specify *in* and *out* variables.  Specifically, an *in* variabl
     int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
     glUseProgram(shaderProgram);
     glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+
+

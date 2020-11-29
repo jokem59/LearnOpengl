@@ -90,3 +90,63 @@ All shaders can specify *in* and *out* variables.  Specifically, an *in* variabl
     glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 
 
+#### More Vertex Attributes
+Previously we've only been using position data in our vetex data, now we're adding color.
+
+    float vertices[] = {
+        // positions         // colors
+        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
+        0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top
+    };
+
+Because we're sending more data to the vertex shader, we need to adjust.
+
+    #version 330 core
+    layout (location = 0) in vec3 aPos;   // the position variable has attribute position 0
+    layout (location = 1) in vec3 aColor; // the color variable has attribute position 1
+    
+    out vec3 ourColor; // output a color to the fragment shader
+
+    void main()
+    {
+        gl_Position = vec4(aPos, 1.0);
+        ourColor = aColor; // set ourColor to the input color we got from the vertex data
+    }
+
+We need to link the output variable `ourColor` from the vertex shader to the input variable `ourColor` in the fragment shader.
+
+    #version 330 core
+    out vec4 FragColor;
+    in vec3 ourColor;
+    
+    void main()
+    {
+        FragColor = vec4(ourColor, 1.0);
+    }
+
+We can imagine VBO memory looking like this now (where each element is 4 bytes):
+| Vertex 1  | Vertex 2  | Vertex 3  |
+|X|Y|Z|R|G|B|X|Y|Z|R|G|B|X|Y|Z|R|G|B|
+
+|-----------> Position Stride = 24 bytes
+| Position Offset = 0
+|-----> Color Offest = 12 bytes
+      |-----------> Color Stride = 24 bytes
+
+Knowing the above structure, we can updated our vertex format via `glVertexAttribPointer`:
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0); // Need to enable for each attribute
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3* sizeof(float)));
+    glEnableVertexAttribArray(1); // Need to enable for each attribute
+
+Where `glVertexAttribPointer` arguments are:
+  1. Location (as defined in shader vertex)
+  2. # of values
+  3. Type of value: `GL_FLOAT`
+  4. Do not normalize values: `GL_FALSE`
+  5. Stride: 6 * sizeof(float) = 24 bytes
+  6. Offset: 3 * sizeof(float) = 12 bytes

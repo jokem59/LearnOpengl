@@ -126,13 +126,13 @@ We need to link the output variable `ourColor` from the vertex shader to the inp
     }
 
 We can imagine VBO memory looking like this now (where each element is 4 bytes):
-| Vertex 1  | Vertex 2  | Vertex 3  |
-|X|Y|Z|R|G|B|X|Y|Z|R|G|B|X|Y|Z|R|G|B|
-
-|-----------> Position Stride = 24 bytes
-| Position Offset = 0
-|-----> Color Offest = 12 bytes
-      |-----------> Color Stride = 24 bytes
+    | Vertex 1  | Vertex 2  | Vertex 3  |
+    |X|Y|Z|R|G|B|X|Y|Z|R|G|B|X|Y|Z|R|G|B|
+    
+    |-----------> Position Stride = 24 bytes
+    | Position Offset = 0
+    |-----> Color Offest = 12 bytes
+          |-----------> Color Stride = 24 bytes
 
 Knowing the above structure, we can updated our vertex format via `glVertexAttribPointer`:
 

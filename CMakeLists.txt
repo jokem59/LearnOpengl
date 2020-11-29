@@ -14,7 +14,7 @@ target_include_directories(LearnOpenGL
 
 if (WIN32)
   target_link_libraries(LearnOpenGL
-                      "${CMAKE_SOURCE_DIR}/lib/windows/glfw3.lib")
+                      "${CMAKE_SOURCE_DIR}/lib/win_x64/glfw3.lib")
 endif (WIN32)
 
 if (UNIX)

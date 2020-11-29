@@ -12,10 +12,12 @@ The Vertex Shader lets us speciy any input in the form of vertex attributes.  Th
 
 Some examples of how Vector Data can vary:
 VBO1: Position Only
-| pos[0] | pos[1] | pos[2] |
 
-VBO2: Position and Velocity
-| pos[0] | vel[0] | pos[1] | vec[1] |
+    | pos[0] | pos[1] | pos[2] |
+
+VBO2: Position and Color
+
+    | pos[0] | col[0] | pos[1] | col[1] |
 
 ### Vertex Array Objects - Managing VBO and their Attributes
 VAOs can be bound just like VBOs, and any subsequent vertex attribute calls from then on will be stored in the VAO.  The advantage with VAO is when configuring vertex attribute pointers, you only have to make the calls once and whenever we want to draw an object, just bind the corresponding VAO.  All the state is stored inside the VAO.
@@ -126,6 +128,7 @@ We need to link the output variable `ourColor` from the vertex shader to the inp
     }
 
 We can imagine VBO memory looking like this now (where each element is 4 bytes):
+
     | Vertex 1  | Vertex 2  | Vertex 3  |
     |X|Y|Z|R|G|B|X|Y|Z|R|G|B|X|Y|Z|R|G|B|
     

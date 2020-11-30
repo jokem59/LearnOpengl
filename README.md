@@ -334,4 +334,31 @@ All that's left to do now is to bind the texture before calling `glDrawElements`
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-Test
+To get a little funky we can also mix the resulting texture color with the vertex colors. We simply multiply the resulting texture color with the vertex color in the fragment shader to mix both colors:
+
+    FragColor = texture(ourTexture, TexCoord) * vec4(ourColor, 1.0);
+
+#### Texture Units
+You probably wondered why the `sampler2D` variable is a uniform if we didn't even assign it some value with glUniform. Using `glUniform1i` we can actually assign a location value to the texture sampler so we can set multiple textures at once in a fragment shader. This location of a texture is more commonly known as a *texture unit*. The _default texture unit for a texture is 0_ which is the default active texture unit so we didn't need to assign a location in the previous section; note that not all graphics drivers assign a default texture unit so the previous section may not have rendered for you.
+
+_The main purpose of texture units is to allow us to use more than 1 texture in our shaders_. By assigning texture units to the samplers, we can bind to multiple textures at once as long as we activate the corresponding texture unit first. Just like glBindTexture we can activate texture units using `glActiveTexture` passing in the texture unit we'd like to use:
+
+    glActiveTexture(GL_TEXTURE0); // activate the texture unit first before binding texture
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+After activating a texture unit, a subsequent `glBindTexture` call will bind that texture to the currently active texture unit. Texture unit `GL\_TEXTURE0` is always by default activated, so we didn't have to activate any texture units in the previous example when using `glBindTexture`.
+
+We still however need to edit the fragment shader to accept another sampler. This should be relatively straightforward now:
+
+    #version 330 core
+    ...
+    
+    uniform sampler2D texture1;
+    uniform sampler2D texture2;
+    
+    void main()
+    {
+        FragColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.2);
+    }
+
+The final output color is now the combination of two texture lookups. GLSL's built-in mix function takes two values as input and linearly interpolates between them based on its third argument. If the third value is 0.0 it returns the first input; if it's 1.0 it returns the second input value. A value of 0.2 will return 80% of the first input color and 20% of the second input color, resulting in a mixture of both our textures.

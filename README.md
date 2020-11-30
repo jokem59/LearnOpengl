@@ -148,7 +148,7 @@ Knowing the above structure, we can updated our vertex format via `glVertexAttri
 
 Where `glVertexAttribPointer` arguments are:
   1. Location (as defined in shader vertex)
-  2. # of values
+  2. \# of values
   3. Type of value: `GL_FLOAT`
   4. Do not normalize values: `GL_FALSE`
   5. Stride: 6 * sizeof(float) = 24 bytes

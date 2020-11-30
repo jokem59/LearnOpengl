@@ -92,6 +92,9 @@ int main()
 
     glViewport(0, 0, 800, 600);
 
+
+    //glUseProgram(shaderProgram);
+
     while(!glfwWindowShouldClose(window))
     {
         // input
@@ -103,9 +106,6 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         ourShader.use();
-        // update the uniform color
-        float timeValue = glfwGetTime();
-        float greenValue = sin(timeValue) / 2.0f + 0.5f;
 
         // draw the triangle
         glBindVertexArray(VAO);

@@ -362,3 +362,44 @@ We still however need to edit the fragment shader to accept another sampler. Thi
     }
 
 The final output color is now the combination of two texture lookups. GLSL's built-in mix function takes two values as input and linearly interpolates between them based on its third argument. If the third value is 0.0 it returns the first input; if it's 1.0 it returns the second input value. A value of 0.2 will return 80% of the first input color and 20% of the second input color, resulting in a mixture of both our textures.
+
+We now want to load and create another texture; you should be familiar with the steps now. Make sure to create another texture object, load the image and generate the final texture using `glTexImage2D`. For the second texture we'll use an image of your facial expression while learning OpenGL:
+
+    unsigned char *data = stbi_load("awesomeface.png", &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+
+Note that we now load a .png image that includes an alpha (transparency) channel. This means we now need to specify that the image data contains an alpha channel as well by using `GL_RGBA`; otherwise OpenGL will incorrectly interpret the image data.
+
+To use the second texture (and the first texture) we'd have to change the rendering procedure a bit by binding both textures to the corresponding *texture unit*:
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+...
+
+We can flip the second texture along across the y-axis by multiplying the texture's x-coord by -1.0.  The function `texture`, for a `sampler2D` data type, takes a `vec2` and we can using *swizzling* to change which coordinate of the Texture is mapped to the vertex coordinate.  Because we originally specified the texture coordinates [0.0, 1.0] to match the vetex data position coordinates, with no changes, we see the image as expected.  If we multiply the x-coord of the texture coordinate provide by -1.0, the expectation is to get a mirrored effect across the y-axis.
+
+    #version 330 core
+    out vec4 FragColor;
+    
+    in vec3 ourColor;
+    in vec2 TexCoord;
+    
+    uniform sampler2D texture1;
+    uniform sampler2D texture2;
+    
+    void main()
+    {
+        FragColor = mix(texture(texture1, TexCoord), texture(texture2, vec2(TexCoord.x * -1.0, TexCoord.y)), 0.2);
+    }
+
+

@@ -10,17 +10,27 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
     return;
 }
 
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow *window, unsigned int shaderId, unsigned int alphaLocation)
 {
+    float alphaValue;
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+    else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    {
+        glGetUniformfv(shaderId, alphaLocation, &alphaValue);
+        glUniform1f(alphaLocation, alphaValue + 0.1f);
+    }
+    else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    {
+        glGetUniformfv(shaderId, alphaLocation, &alphaValue);
+        glUniform1f(alphaLocation, alphaValue - 0.1f);
+    }
 }
 
 int main()
@@ -54,10 +64,10 @@ int main()
     // Points on Normalized Device Coordinates (NDC)
     float vertices[] = {
         // positions          // colors           // texture coords
-        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   0.55f, 0.55f,   // top right
-        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   0.55f, 0.45f,   // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.45f, 0.45f,   // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.45f, 0.55f    // top left
+        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
     };
     unsigned int indices[] = {  // note that we start from 0!
         0, 1, 3,   // first triangle
@@ -108,8 +118,8 @@ int main()
     // set the texture wrapping/filtering options (on the currently bound texture object)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // load and generate the texture
     stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
@@ -152,10 +162,13 @@ int main()
     ourShader.setInt("texture1", 0); // or with shader class
     ourShader.setInt("texture2", 1); // or with shader class
 
+    int alphaUniformLocation = glGetUniformLocation(ourShader.ID, "alpha");
+    glUniform1f(alphaUniformLocation, 0.2f);
+
     while(!glfwWindowShouldClose(window))
     {
         // input
-        processInput(window);
+        processInput(window, ourShader.ID, alphaUniformLocation);
 
         // rendering commands
         // specifies what color we want to clear the screen with

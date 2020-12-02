@@ -6,7 +6,7 @@
 
 ## OpenGL Notes
 ### Vertex Buffer Objects - Managing GPU Memory
-When passing VertexData to the GPU, this data gets stored in memory in the GPU and this area of memory is managed via the Vertex Buffer Object (VBO).  This is nice because the pipeline from CPU/Memory to GPU is relatively slow.  So by storing our VertexData in GPU memory, retrieval operations are very fast.  After binding a VBO with a certain buffer (e.g. GL\_BUFFER\_ARRAY), subsequent calls to GL\_BUFFE\R_ARRAY are associated with the bound VBO.
+When passing VertexData to the GPU, this data gets stored in memory in the GPU and this area of memory is managed via the Vertex Buffer Object (VBO).  This is nice because the pipeline from CPU/Memory to GPU is relatively slow.  So by storing our VertexData in GPU memory, retrieval operations are very fast.  After binding a VBO with a certain buffer (e.g. `GL_BUFFER_ARRAY`), subsequent calls to `GL_BUFFER_ARRAY` are associated with the bound VBO.
 
 The Vertex Shader lets us speciy any input in the form of vertex attributes.  Though flexible, this means we must manually specify what part of our input data (VectorData) goes to which vertex attribute.  The more attributes you have, the more times you need to specify these attributes anytime you want to draw your object.  To "save" attribute state, we can use Vector Array Objects (VAO).
 
@@ -23,7 +23,7 @@ VBO2: Position and Color
 VAOs can be bound just like VBOs, and any subsequent vertex attribute calls from then on will be stored in the VAO.  The advantage with VAO is when configuring vertex attribute pointers, you only have to make the calls once and whenever we want to draw an object, just bind the corresponding VAO.  All the state is stored inside the VAO.
 
 ### Element Buffer Objects - Like a VBO but pass in indices to draw point in specified order
-While VBO store a set of vertices, you can use an Element Buffer Object (EBO) to store a set of unique points, and then provide an array of indices to indicate the order you want to drawy our points in.  NOTE: OpenGL works in triangles so points and indices are specified in sets of three.  EBOs are bound to GL\_ELEMENT\_ARRAY\_BUFFER.  Luckily VAO keep track of EBO.  The last EBO buffer that's bound to a VAO is stored as the VAOs Element Buffer Object.  Binding a VAO automatically the corresponding EBO.  If you want your VAO to keep track of your EBO, unbind the VAO first followed by the EBO.  If you unbind the EBO first, it will unbind your EBO from the VAO.
+While VBO store a set of vertices, you can use an Element Buffer Object (EBO) to store a set of unique points, and then provide an array of indices to indicate the order you want to drawy our points in.  NOTE: OpenGL works in triangles so points and indices are specified in sets of three.  EBOs are bound to `GL_ELEMENT_ARRAY_BUFFER`.  Luckily VAO keep track of EBO.  The last EBO buffer that's bound to a VAO is stored as the VAOs Element Buffer Object.  Binding a VAO automatically the corresponding EBO.  If you want your VAO to keep track of your EBO, unbind the VAO first followed by the EBO.  If you unbind the EBO first, it will unbind your EBO from the VAO.
 
 ### GLSL
 Typical shader language structure:
@@ -78,7 +78,7 @@ You can also use _swizzling_ to fill in `vecn` constructors mixed with literals.
 
 
 #### Ins and Outs
-All shaders can specify *in* and *out* variables.  Specifically, an *in* variable is a *vertex attribute*, typically max of 16 but can be queried with `GL\_MAX\_VERTEX\_ATTRIBUTE`.  You _link_ variables from one shader to another by specifying the *out* variable in one shader and specifying the same variable name as *in* in the subsequent shader.
+All shaders can specify *in* and *out* variables.  Specifically, an *in* variable is a *vertex attribute*, typically max of 16 but can be queried with `GL_MAX_VERTEX_ATTRIBUTE`.  You _link_ variables from one shader to another by specifying the *out* variable in one shader and specifying the same variable name as *in* in the subsequent shader.
 
 #### Uniforms
 *Uniforms* are another means to pass data from the CPU to the shaders on the GPU.  These are different from *Vertex Attributes*.  *Uniforms* are _global_, which means a uniform variable is unique per shader object and can be accessed by any shader at any stage of the shader program.  They also differ because once you set their value, they keep that value until they are reset or updated.
@@ -178,29 +178,29 @@ The resulting texture coordinates look like:
 
 #### Texture Wrapping
 Texture coordinates usually range from (0,0) to (1,1) but what happens if we specify coordinates outside this range? The default behavior of OpenGL is to repeat the texture images (we basically ignore the integer part of the floating point texture coordinate), but there are more options OpenGL offers:
-  - `GL\_REPEAT`: The default behavior for textures. Repeats the texture image.
-  - `GL\_MIRRORED\_REPEAT`: Same as GL\_REPEAT but mirrors the image with each repeat.
-  - `GL\_CLAMP\_TO\_EDGE`: Clamps the coordinates between 0 and 1. The result is that higher coordinates become clamped to the edge, resulting in a stretched edge pattern.
-  - `GL\_CLAMP\_TO\_BORDER`: Coordinates outside the range are now given a user-specified border color.
+  - `GL_REPEAT`: The default behavior for textures. Repeats the texture image.
+  - `GL_MIRRORED_REPEAT`: Same as GL\_REPEAT but mirrors the image with each repeat.
+  - `GL_CLAMP_TO_EDGE`: Clamps the coordinates between 0 and 1. The result is that higher coordinates become clamped to the edge, resulting in a stretched edge pattern.
+  - `GL_CLAMP_TO_BORDER`: Coordinates outside the range are now given a user-specified border color.
 
 Each of the aforementioned options can be set per coordinate axis (s, t (and r if you're using 3D textures) equivalent to x,y,z) with the glTexParameter* function:
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 
-The first argument specifies the texture target; we're working with 2D textures so the texture target is `GL\_TEXTURE\_2D`. The second argument requires us to tell what option we want to set and for which texture axis; we want to configure it for both the S and T axis. The last argument requires us to pass in the texture wrapping mode we'd like and in this case OpenGL will set its texture wrapping option on the currently active texture with GL\_MIRRORED\_REPEAT.
+The first argument specifies the texture target; we're working with 2D textures so the texture target is `GL_TEXTURE_2D`. The second argument requires us to tell what option we want to set and for which texture axis; we want to configure it for both the S and T axis. The last argument requires us to pass in the texture wrapping mode we'd like and in this case OpenGL will set its texture wrapping option on the currently active texture with GL\_MIRRORED\_REPEAT.
 
-If we choose the `GL\_CLAMP\_TO\_BORDER` option we should also specify a border color. This is done using the fv equivalent of the glTexParameter function with `GL\_TEXTURE\_BORDER\_COLOR` as its option where we pass in a float array of the border's color value:
+If we choose the `GL_CLAMP_TO_BORDER` option we should also specify a border color. This is done using the fv equivalent of the glTexParameter function with `GL_TEXTURE_BORDER_COLOR` as its option where we pass in a float array of the border's color value:
 
     float borderColor[] = { 1.0f, 1.0f, 0.0f, 1.0f };
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
 #### Texture Filtering
-`GL\_NEAREST` (also known as nearest neighbor or point filtering) is the default texture filtering method of OpenGL. When set to GL_NEAREST, OpenGL selects the texel that center is closest to the texture coordinate.
+`GL_NEAREST` (also known as nearest neighbor or point filtering) is the default texture filtering method of OpenGL. When set to GL_NEAREST, OpenGL selects the texel that center is closest to the texture coordinate.
 
-`GL\_LINEAR` (also known as (bi)linear filtering) takes an interpolated value from the texture coordinate's neighboring texels, approximating a color between the texels. The smaller the distance from the texture coordinate to a texel's center, the more that texel's color contributes to the sampled color.
+`GL_LINEAR` (also known as (bi)linear filtering) takes an interpolated value from the texture coordinate's neighboring texels, approximating a color between the texels. The smaller the distance from the texture coordinate to a texel's center, the more that texel's color contributes to the sampled color.
 
-`GL\_NEAREST` results in blocked patterns where we can clearly see the pixels that form the texture while `GL\_LINEAR` produces a smoother pattern where the individual pixels are less visible. `GL\_LINEAR` produces a more realistic output, but some developers prefer a more 8-bit look and as a result pick the `GL\_NEAREST` option.
+`GL_NEAREST` results in blocked patterns where we can clearly see the pixels that form the texture while `GL_LINEAR` produces a smoother pattern where the individual pixels are less visible. `GL_LINEAR` produces a more realistic output, but some developers prefer a more 8-bit look and as a result pick the `GL_NEAREST` option.
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -214,10 +214,10 @@ Creating a collection of mipmapped textures for each texture image is cumbersome
 
 When switching between mipmaps levels during rendering OpenGL may show some artifacts like sharp edges visible between the two mipmap layers. Just like normal texture filtering, it is also possible to filter between mipmap levels using NEAREST and LINEAR filtering for switching between mipmap levels. To specify the filtering method between mipmap levels we can replace the original filtering methods with one of the following four options:
 
-  - `GL\_NEAREST\_MIPMAP\_NEAREST`: takes the nearest mipmap to match the pixel size and uses nearest neighbor interpolation for texture sampling.
-  - `GL\_LINEAR\_MIPMAP\_NEAREST`: takes the nearest mipmap level and samples that level using linear interpolation.
-  - `GL\_NEAREST\_MIPMAP\_LINEAR`: linearly interpolates between the two mipmaps that most closely match the size of a pixel and samples the interpolated level via nearest neighbor interpolation.
-  - `GL\_LINEAR\_MIPMAP\_LINEAR`: linearly interpolates between the two closest mipmaps and samples the interpolated level via linear interpolation.
+  - `GL_NEAREST_MIPMAP_NEAREST`: takes the nearest mipmap to match the pixel size and uses nearest neighbor interpolation for texture sampling.
+  - `GL_LINEAR_MIPMAP_NEAREST`: takes the nearest mipmap level and samples that level using linear interpolation.
+  - `GL_NEAREST_MIPMAP_LINEAR`: linearly interpolates between the two mipmaps that most closely match the size of a pixel and samples the interpolated level via nearest neighbor interpolation.
+  - `GL_LINEAR_MIPMAP_LINEAR`: linearly interpolates between the two closest mipmaps and samples the interpolated level via linear interpolation.
 
 Just like texture filtering we can set the filtering method to one of the 4 aforementioned methods using `glTexParameteri`:
 
@@ -227,9 +227,9 @@ Just like texture filtering we can set the filtering method to one of the 4 afor
 #### Loading and Creating Textures
 Use an image-loading library that supports several popular formats and does all the hard work for us. A library like `stb_image.h`.
 
-By defining `STB\_IMAGE\_IMPLEMENTATION` the preprocessor modifies the header file such that it only contains the relevant definition source code, effectively turning the header file into a .cpp file, and that's about it. Now simply include stb_image.h somewhere in your program and compile.
+By defining `STB_IMAGE_IMPLEMENTATION` the preprocessor modifies the header file such that it only contains the relevant definition source code, effectively turning the header file into a .cpp file, and that's about it. Now simply include stb_image.h somewhere in your program and compile.
 
-To load an image using `stb\_image.h` we use its `stbi_load` function:
+To load an image using `stb_image.h` we use its `stbi_load` function:
 
     int width, height, nrChannels;
     unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
@@ -252,7 +252,7 @@ Now that the texture is bound, we can start generating a texture using the previ
     glGenerateMipmap(GL_TEXTURE_2D);
 
 This is a large function with quite a few parameters so we'll walk through them step-by-step:
-  - The first argument specifies the texture target; setting this to `GL\_TEXTURE\_2D` means this operation will generate a texture on the currently bound texture object at the same target (so any textures bound to targets `GL\_TEXTURE\_1D` or `GL\_TEXTURE\_3D` will not be affected).
+  - The first argument specifies the texture target; setting this to `GL_TEXTURE_2D` means this operation will generate a texture on the currently bound texture object at the same target (so any textures bound to targets `GL_TEXTURE_1D` or `GL_TEXTURE_3D` will not be affected).
   - The second argument specifies the mipmap level for which we want to create a texture for if you want to set each mipmap level manually, but we'll leave it at the base level which is 0.
   - The third argument tells OpenGL in what kind of format we want to store the texture. Our image has only RGB values so we'll store the texture with RGB values as well.
   - The 4th and 5th argument sets the width and height of the resulting texture. We stored those earlier when loading the image so we'll use the corresponding variables.
@@ -290,7 +290,7 @@ Since we've added an extra vertex attribute we again have to notify OpenGL of th
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-Note that we have to adjust the stride parameter of the previous two vertex attributes to 8 * sizeof(float) as well.
+Note that we have to adjust the stride parameter of the previous two vertex attributes to `8 * sizeof(float)` as well.
 
 Next we need to alter the vertex shader to accept the texture coordinates as a vertex attribute and then forward the coordinates to the fragment shader:
 
@@ -346,7 +346,7 @@ _The main purpose of texture units is to allow us to use more than 1 texture in 
     glActiveTexture(GL_TEXTURE0); // activate the texture unit first before binding texture
     glBindTexture(GL_TEXTURE_2D, texture);
 
-After activating a texture unit, a subsequent `glBindTexture` call will bind that texture to the currently active texture unit. Texture unit `GL\_TEXTURE0` is always by default activated, so we didn't have to activate any texture units in the previous example when using `glBindTexture`.
+After activating a texture unit, a subsequent `glBindTexture` call will bind that texture to the currently active texture unit. Texture unit `GL_TEXTURE0` is always by default activated, so we didn't have to activate any texture units in the previous example when using `glBindTexture`.
 
 We still however need to edit the fragment shader to accept another sampler. This should be relatively straightforward now:
 
@@ -384,7 +384,16 @@ To use the second texture (and the first texture) we'd have to change the render
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-...
+We also have to tell OpenGL to which texture unit each shader sampler belongs to by setting each sampler using `glUniform1i`. We only have to set this once, so we can do this before we enter the render loop:
+
+    ourShader.use(); // don't forget to activate the shader before setting uniforms!  
+    glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0); // set it manually
+    ourShader.setInt("texture2", 1); // or with shader class
+    
+    while(...)
+    {
+        [...]
+    }
 
 We can flip the second texture along across the y-axis by multiplying the texture's x-coord by -1.0.  The function `texture`, for a `sampler2D` data type, takes a `vec2` and we can using *swizzling* to change which coordinate of the Texture is mapped to the vertex coordinate.  Because we originally specified the texture coordinates [0.0, 1.0] to match the vetex data position coordinates, with no changes, we see the image as expected.  If we multiply the x-coord of the texture coordinate provide by -1.0, the expectation is to get a mirrored effect across the y-axis.
 
@@ -403,3 +412,7 @@ We can flip the second texture along across the y-axis by multiplying the textur
     }
 
 
+### Transformations
+We now know how to create objects, color them and/or give them a detailed appearance using textures, but they're still not that interesting since they're all static objects. We could try and make them move by changing their vertices and re-configuring their buffers each frame, but that's cumbersome and costs quite some processing power. There are much better ways to *transform* an object and that's by using (multiple) matrix objects.
+
+#### Vectors

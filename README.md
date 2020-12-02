@@ -416,3 +416,217 @@ We can flip the second texture along across the y-axis by multiplying the textur
 We now know how to create objects, color them and/or give them a detailed appearance using textures, but they're still not that interesting since they're all static objects. We could try and make them move by changing their vertices and re-configuring their buffers each frame, but that's cumbersome and costs quite some processing power. There are much better ways to *transform* an object and that's by using (multiple) matrix objects.
 
 #### Vectors
+*Dot Product* - The dot product of two vectors is equal to the scalar product of their lengths times the cosine of the angle between them.  The dot product *only* defines the angle between both vectors.
+
+*Cross Product* - The cross product is only defined in 3D space and takes two non-parallel vectors as input and produces a third vector that is orthogonal to both the input vectors. If both the input vectors are orthogonal to each other as well, a cross product would result in 3 orthogonal vectors
+
+#### Matrices
+A matrix is a rectangular array of numbers, symbols and/or mathematical expressions. Each individual item in a matrix is called an element of the matrix. An example of a 2x3 matrix is shown below:
+
+    [ 1 2 3 ]
+    [ 4 5 6 ]
+
+Matrices are indexed by `(i,j)` where `i` is the row and `j` is the column, that is why the above matrix is called a 2x3 matrix (3 columns and 2 rows).  To retrieve the value `4` we would index it as `(2,1)` (second row, first column).
+
+Matrix multiplication basically means to follow a set of pre-defined rules when multiplying. There are a few restrictions though:
+
+  - You can only multiply two matrices if the number of columns on the left-hand side matrix is equal to the number of rows on the right-hand side matrix.
+  - Matrix multiplication is not commutative that is `A⋅B≠B⋅A`.
+
+#### Matrix-Vector Multiplication
+
+Matrix multiplication happens from RIGHT to LEFT
+*Identity Matrix* - 4x4 matrix with 1's across the diaganol.  When multiplied with a four element vector (a 4x1 matrix), this transformation does not affect the vector.
+
+    [ 1 0 0 0 ]   [ 1 ]   [ 1 * 1 ]   [ 1 ]
+    [ 0 1 0 0 ] * [ 2 ] = [ 1 * 2 ] = [ 2 ]
+    [ 0 0 1 0 ]   [ 3 ]   [ 1 * 3 ]   [ 3 ]
+    [ 0 0 0 1 ]   [ 4 ]   [ 1 * 4 ]   [ 4 ]
+
+You may be wondering what the use is of a transformation matrix that does not transform? The identity matrix is usually a starting point for generating other transformation matrices and if we dig even deeper into linear algebra, a very useful matrix for proving theorems and solving linear equations.
+
+*Translation* - starting with identity matrix or any transformed identity matrix, move a vector to a new position.
+
+    [ 1 0 0 Tx ]   [ x ]   [ x + Tx ]
+    [ 0 1 0 Ty ] * [ y ] = [ y + Ty ]
+    [ 0 0 1 Tz ]   [ z ]   [ z + Tz ]
+    [ 0 0 0 1  ]   [ 1 ]   [   1    ]
+
+This works because all of the translation values are multiplied by the vector's w column and added to the vector's original values.  With a translation matrix we can move objects in any of the 3 axis directions (x, y, z), making it a very useful transformation matrix for our transformation toolkit.
+
+*Scale* - starting with identity matrix or any transformed identity matrix, scale each vector element accordingly.
+
+    [ S1 0  0  0 ]   [ x ]   [ S1 * x ]
+    [ 0  S2 0  0 ] * [ y ] = [ S2 * y ]
+    [ 0  0  S3 0 ]   [ z ]   [ S3 * z ]
+    [ 0  0  0  1 ]   [ 1 ]   [    1   ]
+
+Note that we keep the 4th scaling value 1. The w component is used for other purposes as we'll see later on.
+
+*Rotate* - starting with identity matrix or any transformed identity matrix, rotate the vector elements X degrees/radians.
+
+First let's define what a rotation of a vector actually is. A rotation in 2D or 3D is represented with an angle. An angle could be in degrees or radians where a whole circle has 360 degrees or 2 PI radians. I prefer explaining rotations using degrees as we're generally more accustomed to them.
+
+Rotations in 3D are specified with an angle and a rotation axis. The angle specified will rotate the object along the rotation axis given. Try to visualize this by spinning your head a certain degree while continually looking down a single rotation axis. When rotating 2D vectors in a 3D world for example, we set the rotation axis to the z-axis (try to visualize this).
+
+#### Combining Matrices
+
+Order of Operations: Scale -> Rotation -> Translation.  Breaking this order can have negative effects on your other transformations (e.g. your rotation will get scaled as well).
+  - In matrix multiplation, this order of operation looks like:
+    - [TRANSLATION] * [ROTATION] * [SCALE] = [TRANSFORMATION]
+    - [TRANSFORMATION] * [VECTOR] => Transformed Vector
+
+### Coordinate Systems
+
+In the last chapter we learned how we can use matrices to our advantage by transforming all vertices with transformation matrices. OpenGL expects all the vertices, that we want to become visible, to be in normalized device coordinates after each vertex shader run. That is, the x, y and z coordinates of each vertex should be between -1.0 and 1.0; coordinates outside this range will not be visible. What we usually do, is specify the coordinates in a range (or space) we determine ourselves and in the vertex shader transform these coordinates to normalized device coordinates (NDC). These NDC are then given to the rasterizer to transform them to 2D coordinates/pixels on your screen.
+
+Transforming coordinates to NDC is usually accomplished in a step-by-step fashion where we transform an object's vertices to several coordinate systems before finally transforming them to NDC. The advantage of transforming them to several intermediate coordinate systems is that some operations/calculations are easier in certain coordinate systems as will soon become apparent. There are a total of 5 different coordinate systems that are of importance to us:
+
+  - Local space (or Object space)
+  - World space
+  - View space (or Eye space)
+  - Clip space
+  - Screen space
+
+To transform the coordinates from one space to the next coordinate space we'll use several transformation matrices of which the most important are the *model*, *view* and *projection matrix*. Our vertex coordinates first start in *local space* as local coordinates and are then further processed to *world coordinates*, *view coordinates*, *clip coordinates* and eventually end up as *screen coordinates*.
+
+  1. Local coordinates are the coordinates of your object relative to its local origin; they're the coordinates your object begins in.
+  2. The next step is to transform the local coordinates to world-space coordinates which are coordinates in respect of a larger world. These coordinates are relative to some global origin of the world, together with many other objects also placed relative to this world's origin.
+  3. Next we transform the world coordinates to view-space coordinates in such a way that each coordinate is as seen from the camera or viewer's point of view.
+  4. After the coordinates are in view space we want to project them to clip coordinates. Clip coordinates are processed to the -1.0 and 1.0 range and determine which vertices will end up on the screen. Projection to clip-space coordinates can add perspective if using perspective projection.
+  5. And lastly we transform the clip coordinates to screen coordinates in a process we call viewport transform that transforms the coordinates from -1.0 and 1.0 to the coordinate range defined by glViewport. The resulting coordinates are then sent to the rasterizer to turn them into fragments.
+
+You probably got a slight idea what each individual space is used for. The reason we're transforming our vertices into all these different spaces is that some operations make more sense or are easier to use in certain coordinate systems. For example, when modifying your object it makes most sense to do this in local space, while calculating certain operations on the object with respect to the position of other objects makes most sense in world coordinates and so on. If we want, we could define one transformation matrix that goes from local space to clip space all in one go, but that leaves us with less flexibility.
+"
+
+#### Local Space
+Local space is the coordinate space that is local to your object, i.e. where your object begins in. Imagine that you've created your cube in a modeling software package (like Blender). The origin of your cube is probably at (0,0,0) even though your cube may end up at a different location in your final application. Probably all the models you've created all have (0,0,0) as their initial position. All the vertices of your model are therefore in local space: they are all local to your object.
+
+The vertices of the container we've been using were specified as coordinates between -0.5 and 0.5 with 0.0 as its origin. These are local coordinates.
+
+#### World Space
+If we would import all our objects directly in the application they would probably all be somewhere positioned inside each other at the world's origin of (0,0,0) which is not what we want. We want to define a position for each object to position them inside a larger world. The coordinates in world space are exactly what they sound like: the coordinates of all your vertices relative to a (game) world. This is the coordinate space where you want your objects transformed to in such a way that they're all scattered around the place (preferably in a realistic fashion). The coordinates of your object are transformed from local to world space; this is accomplished with the model matrix.
+
+The model matrix is a transformation matrix that translates, scales and/or rotates your object to place it in the world at a location/orientation they belong to. Think of it as transforming a house by scaling it down (it was a bit too large in local space), translating it to a suburbia town and rotating it a bit to the left on the y-axis so that it neatly fits with the neighboring houses. You could think of the matrix in the previous chapter to position the container all over the scene as a sort of model matrix as well; we transformed the local coordinates of the container to some different place in the scene/world.
+
+#### View Space
+The view space is what people usually refer to as the camera of OpenGL (it is sometimes also known as camera space or eye space). The view space is the result of transforming your world-space coordinates to coordinates that are in front of the user's view. The view space is thus the space as seen from the camera's point of view. This is usually accomplished with a combination of translations and rotations to translate/rotate the scene so that certain items are transformed to the front of the camera. These combined transformations are generally stored inside a view matrix that transforms world coordinates to view space. In the next chapter we'll extensively discuss how to create such a view matrix to simulate a camera.
+
+#### Clip Space
+At the end of each vertex shader run, OpenGL expects the coordinates to be within a specific range and any coordinate that falls outside this range is clipped. Coordinates that are clipped are discarded, so the remaining coordinates will end up as fragments visible on your screen. This is also where clip space gets its name from.
+
+Because specifying all the visible coordinates to be within the range -1.0 and 1.0 isn't really intuitive, we specify our own coordinate set to work in and convert those back to NDC as OpenGL expects them.
+
+To transform vertex coordinates from view to clip-space we define a so called *projection matrix* that specifies a range of coordinates e.g. -1000 and 1000 in each dimension. The projection matrix then transforms coordinates within this specified range to normalized device coordinates (-1.0, 1.0). All coordinates outside this range will not be mapped between -1.0 and 1.0 and therefore be clipped. With this range we specified in the projection matrix, a coordinate of (1250, 500, 750) would not be visible, since the x coordinate is out of range and thus gets converted to a coordinate higher than 1.0 in NDC and is therefore clipped.
+
+Note that if only a part of a primitive e.g. a triangle is outside the clipping volume OpenGL will reconstruct the triangle as one or more triangles to fit inside the clipping range.
+
+This *viewing box* a projection matrix creates is called a *frustum* and each coordinate that ends up inside this frustum will end up on the user's screen. The total process to convert coordinates within a specified range to NDC that can easily be mapped to 2D view-space coordinates is called *projection* since the projection matrix projects 3D coordinates to the easy-to-map-to-2D normalized device coordinates.
+
+Once all the vertices are transformed to clip space a final operation called *perspective division* is performed where we divide the `x`, `y` and `z` components of the position vectors by the vector's homogeneous `w` component; perspective division is what transforms the 4D clip space coordinates to 3D normalized device coordinates. This step is performed automatically at the end of the vertex shader step.
+
+It is after this stage where the resulting coordinates are mapped to screen coordinates (using the settings of `glViewport`) and turned into fragments.
+
+The projection matrix to transform view coordinates to clip coordinates usually takes two different forms, where each form defines its own unique frustum. We can either create an `orthographic projection matrix` or a `perspective projection matrix`.
+
+#### Orthographic Projection
+An orthographic projection matrix defines a cube-like frustum box that defines the clipping space where each vertex outside this box is clipped. When creating an orthographic projection matrix we specify the width, height and length of the visible frustum. All the coordinates inside this frustum will end up within the NDC range after transformed by its matrix and thus won't be clipped.
+
+The frustum defines the visible coordinates and is specified by a width, a height and a near and far plane. Any coordinate in front of the near plane is clipped and the same applies to coordinates behind the far plane. The orthographic frustum directly maps all coordinates inside the frustum to normalized device coordinates without any special side effects since it won't touch the `w` component of the transformed vector; if the `w` component remains equal to 1.0 perspective division won't change the coordinates.
+
+To create an orthographic projection matrix we make use of GLM's built-in function `glm::ortho`:
+
+    glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
+
+The first two parameters specify the left and right coordinate of the frustum and the third and fourth parameter specify the bottom and top part of the frustum. With those 4 points we've defined the size of the near and far planes and the 5th and 6th parameter then define the distances between the near and far plane. *This specific projection matrix transforms all coordinates between these `x`, `y` and `z` range values to normalized device coordinates*.
+
+An orthographic projection matrix directly maps coordinates to the 2D plane that is your screen, but in reality a direct projection produces unrealistic results since the projection doesn't take perspective into account. That is something the perspective projection matrix fixes for us.
+
+#### Perspective Projection
+If you ever were to enjoy the graphics the real life has to offer you'll notice that objects that are farther away appear much smaller. This weird effect is something we call perspective.
+
+As you can see, due to perspective the lines seem to coincide at a far enough distance. *This is exactly the effect perspective projection tries to mimic and it does so using a perspective projection matrix.* The projection matrix maps a given frustum range to clip space, but also manipulates the `w` value of each vertex coordinate in such a way that _the further away a vertex coordinate is from the viewer, the higher this w component becomes._ Once the coordinates are transformed to clip space they are in the range `-w` to `w` (anything outside this range is clipped). OpenGL requires that the visible coordinates fall between the range -1.0 and 1.0 as the final vertex shader output, thus once the coordinates are in clip space, perspective division is applied to the clip space coordinates:
+
+    out = [ x/w ]
+          [ y/w ]
+          [ z/w ]
+
+Each component of the vertex coordinate is divided by its `w` component giving smaller vertex coordinates the further away a vertex is from the viewer. This is another reason why the `w` component is important, since it helps us with perspective projection. The resulting coordinates are then in normalized device space.
+
+A perspective projection matrix can be created in GLM as follows:
+
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 0.1f, 100.0f))
+
+What `glm::perspective` does is again create a large frustum that defines the visible space, anything outside the frustum will not end up in the clip space volume and will thus become clipped. A perspective frustum can be visualized as a non-uniformly shaped box from where each coordinate inside this box will be mapped to a point in clip space.
+
+Its first parameter defines the `fov` value, that stands for *field of view* and sets how large the viewspace is. For a realistic view it is usually set to 45 degrees, but for more doom-style results you could set it to a higher value. The second parameter sets the aspect ratio which is calculated by dividing the viewport's width by its height. The third and fourth parameter set the near and far plane of the frustum. We usually set the near distance to 0.1 and the far distance to 100.0. All the vertices between the near and far plane and inside the frustum will be rendered.
+
+Whenever the near value of your perspective matrix is set too high (like 10.0), OpenGL will clip all coordinates close to the camera (between 0.0 and 10.0), which can give a visual result you maybe have seen before in videogames where you could see through certain objects when moving uncomfortably close to them.
+
+When using *orthographic projection*, each of the vertex coordinates are directly mapped to clip space without any fancy perspective division (it still does perspective division, but the w component is not manipulated (it stays 1) and thus has no effect). Because the orthographic projection doesn't use perspective projection, objects farther away do not seem smaller, which produces a weird visual output. _For this reason the orthographic projection is mainly used for 2D renderings and for some architectural or engineering applications where we'd rather not have vertices distorted by perspective._ Applications like Blender that are used for 3D modeling sometimes use orthographic projection for modeling, because it more accurately depicts each object's dimensions.
+
+You can see that with perspective projection, the vertices farther away appear much smaller, while in orthographic projection each vertex has the same distance to the user.
+
+#### Putting it all together
+We create a transformation matrix for each of the aforementioned steps: model, view and projection matrix. A vertex coordinate is then transformed to clip coordinates as follows:
+
+    Vclip = Mprojection * Mview * Mmodel * Vlocal
+
+Note: Matrix multiplication order is right to left so order is: Local Matrix -> Model Matrix -> View Matrix -> Projection Matrix.  The resulting vertex should then be assigned to `gl_Position` in the vertex shader and OpenGL will then automatically perform perspective division and clipping.
+
+The output of the vertex shader requires the coordinates to be in clip-space which is what we just did with the transformation matrices. OpenGL then performs perspective division on the clip-space coordinates to transform them to normalized-device coordinates. OpenGL then uses the parameters from glViewPort to map the normalized-device coordinates to screen coordinates where each coordinate corresponds to a point on your screen (in our case a 800x600 screen). This process is called the *viewport transform*.
+
+#### Going 3D
+Now that we know how to transform 3D coordinates to 2D coordinates we can start rendering real 3D objects instead of the lame 2D plane we've been showing so far.
+
+To start drawing in 3D we'll first create a model matrix. The model matrix consists of translations, scaling and/or rotations we'd like to apply to transform all object's vertices to the global world space. Let's transform our plane a bit by rotating it on the x-axis so it looks like it's laying on the floor. The model matrix then looks like this:
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f)); 
+
+*By multiplying the vertex coordinates with this model matrix we're transforming the vertex coordinates to world coordinates.* Our plane that is slightly on the floor thus represents the plane in the global world.
+
+Next we need to create a view matrix. We want to move slightly backwards in the scene so the object becomes visible (when in world space we're located at the origin (0,0,0)). To move around the scene, think about the following:
+
+  - To move a camera backwards, is the same as moving the entire scene forward.
+  - That is exactly what a view matrix does, we move the entire scene around inversed to where we want the camera to move.
+  - Because we want to move backwards and since OpenGL is a right-handed system we have to move in the positive z-axis. We do this by translating the scene towards the negative z-axis. This gives the impression that we are moving backwards.
+
+We'll discuss how to move around the scene in more detail in the next chapter. For now the view matrix looks like this:
+
+    glm::mat4 view = glm::mat4(1.0f);
+    // note that we're translating the scene in the reverse direction of where we want to move
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+The last thing we need to define is the projection matrix. We want to use perspective projection for our scene so we'll declare the projection matrix like this:
+
+    glm::mat4 projection;
+    projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
+Now that we created the transformation matrices we should pass them to our shaders. First let's declare the transformation matrices as uniforms in the vertex shader and multiply them with the vertex coordinates:
+
+    #version 330 core
+    layout (location = 0) in vec3 aPos;
+    ...
+    uniform mat4 model;
+    uniform mat4 view;
+    uniform mat4 projection;
+
+    void main()
+    {
+        // note that we read the multiplication from right to left
+        gl_Position = projection * view * model * vec4(aPos, 1.0);
+        ...
+    }
+
+We should also send the matrices to the shader (this is usually done each frame since transformation matrices tend to change a lot):
+
+    int modelLoc = glGetUniformLocation(ourShader.ID, "model");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+    ... // same for View Matrix and Projection Matrix
+
+Now that our vertex coordinates are transformed via the model, view and projection matrix the final object should be:
+
+  - Tilted backwards to the floor.
+  - A bit farther away from us.
+  - Be displayed with perspective (it should get smaller, the further its vertices are).

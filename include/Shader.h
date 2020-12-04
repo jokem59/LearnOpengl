@@ -30,16 +30,13 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     fShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
     try
     {
-        std::cout << "Trying to file vertex path: " << vertexPath << " fragment path: " << fragmentPath << '\n';
         // open files
         vShaderFile.open(vertexPath);
         fShaderFile.open(fragmentPath);
-        std::cout << "Opened files\n";
         std::stringstream vShaderStream, fShaderStream;
         // read file's buffer contents into streams
         vShaderStream << vShaderFile.rdbuf();
         fShaderStream << fShaderFile.rdbuf();
-        std::cout << "Read files into buffer\n";
         // close file handlers
         vShaderFile.close();
         fShaderFile.close();

@@ -10,7 +10,6 @@ uniform mat4 projection;
 
 void main()
 {
-    // NOTE: matrix multiplication is read from right to left
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
-    TexCoord = aTexCoord;
+	gl_Position = projection * view * model * vec4(aPos, 1.0f);
+	TexCoord = vec2(aTexCoord.x, aTexCoord.y);
 }
